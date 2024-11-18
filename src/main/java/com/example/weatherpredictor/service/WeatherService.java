@@ -1,6 +1,7 @@
 package com.example.weatherpredictor.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +26,14 @@ public class WeatherService {
     @Value("${weather.api.url}")
     private String BASE_URL;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @CircuitBreaker(name = Constants.WEATHER_SERVICE, fallbackMethod = "getWeatherFallback")
     public ResponseEntity<OpenWeatherResponse> getPublicApiWeatherForecast(String city) {
         log.debug("WeatherService::getPublicApiWeatherForecast");
         Integer count = Helper.getApiCallCount();
         String url = BASE_URL + "?q=" + city + "&appid=" + API_KEY + "&cnt=" + count + "&units=metric";
-        RestTemplate restTemplate = new RestTemplate();
         OpenWeatherResponse response = restTemplate.getForObject(url, OpenWeatherResponse.class);
         return ResponseEntity.ok(response);
     }
