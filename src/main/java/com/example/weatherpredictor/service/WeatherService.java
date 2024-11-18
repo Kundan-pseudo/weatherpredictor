@@ -1,5 +1,6 @@
 package com.example.weatherpredictor.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import com.example.weatherpredictor.utils.Helper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @Service
+@Slf4j
 public class WeatherService {
 
     @Value("${weather.api.key}")
@@ -25,6 +27,7 @@ public class WeatherService {
 
     @CircuitBreaker(name = Constants.WEATHER_SERVICE, fallbackMethod = "getWeatherFallback")
     public ResponseEntity<OpenWeatherResponse> getPublicApiWeatherForecast(String city) {
+        log.debug("WeatherService::getPublicApiWeatherForecast");
         Integer count = Helper.getApiCallCount();
         String url = BASE_URL + "?q=" + city + "&appid=" + API_KEY + "&cnt=" + count + "&units=metric";
         RestTemplate restTemplate = new RestTemplate();
@@ -33,13 +36,16 @@ public class WeatherService {
     }
 
     public WeatherResponse getWeatherForecast(String city) {
+        log.debug("WeatherService::getWeatherForecast");
         ResponseEntity<OpenWeatherResponse> responseEntity = getPublicApiWeatherForecast(city);
         if (responseEntity.getStatusCode() == HttpStatus.OK)
             return processWeatherData(responseEntity.getBody());
+        log.error("Failed to fetch weather data");
         throw new RuntimeException("Failed to fetch weather data");
     }
 
     private WeatherResponse processWeatherData(OpenWeatherResponse weatherData) {
+        log.debug("WeatherService::processWeatherData");
         WeatherResponse weatherResponse = new WeatherResponse();
         Current current = new Current();
         Forecast currForecast = weatherData.getList().get(1);
@@ -63,6 +69,7 @@ public class WeatherService {
     }
 
     public ResponseEntity<WeatherResponse> getWeatherFallback(Throwable t) {
+        log.debug("WeatherService::getWeatherFallback");
         WeatherResponse mockResponse = Helper.getMockData();
         return ResponseEntity.ok(mockResponse);
     }
