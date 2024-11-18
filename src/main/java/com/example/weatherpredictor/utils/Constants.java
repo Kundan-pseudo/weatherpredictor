@@ -1,4 +1,4 @@
-package com.utils;
+package com.example.weatherpredictor.utils;
 
 public class Constants {
     public static final String WEATHER_SERVICE = "weatherService";

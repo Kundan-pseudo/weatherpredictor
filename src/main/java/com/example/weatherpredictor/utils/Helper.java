@@ -1,4 +1,4 @@
-package com.utils;
+package com.example.weatherpredictor.utils;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;

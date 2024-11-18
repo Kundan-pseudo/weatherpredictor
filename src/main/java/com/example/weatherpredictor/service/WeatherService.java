@@ -10,8 +10,8 @@ import com.example.weatherpredictor.model.Forecast;
 import com.example.weatherpredictor.model.Main;
 import com.example.weatherpredictor.model.OpenWeatherResponse;
 import com.example.weatherpredictor.model.WeatherResponse;
-import com.utils.Constants;
-import com.utils.Helper;
+import com.example.weatherpredictor.utils.Constants;
+import com.example.weatherpredictor.utils.Helper;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
