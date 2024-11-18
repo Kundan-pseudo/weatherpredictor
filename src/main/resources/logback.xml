@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Property to define the logs directory -->
+    <property name="LOGS" value="./logs" />
+    <timestamp key="bySecond" datePattern="yyyy.MM.dd.'T'.HH.mm.ss.SSS" timeReference="contextBirth" />
+
+    <!-- Console Appender: Logs all levels (INFO, WARN, ERROR) -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <!-- File Appender: Logs WARN and ERROR messages -->
+    <appender name="ErrorFile" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS}/error-${bySecond}.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender: Logs all levels (DEBUG, INFO, WARN, ERROR) -->
+    <appender name="DebugFile" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS}/debug-${bySecond}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger: Configures global logging behavior -->
+    <root level="debug">
+        <!-- All logs (DEBUG and above) go to the debug file -->
+        <appender-ref ref="DebugFile" />
+        <!-- All logs (INFO and above) go to the console -->
+        <appender-ref ref="Console" />
+        <!-- WARN and ERROR logs go to the error file -->
+        <appender-ref ref="ErrorFile" />
+    </root>
+</configuration>
