@@ -9,10 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.example.weatherpredictor.model.Forecast;
-import com.example.weatherpredictor.model.ForecastDetails;
-import com.example.weatherpredictor.model.Main;
-import com.example.weatherpredictor.model.StepUp;
+import com.example.weatherpredictor.model.*;
 
 public class Helper {
     public static String getAdvisory(Forecast forecast, Main main) {
@@ -67,6 +64,29 @@ public class Helper {
         if (hour % 3 != 0)
             apiCallCount += 1;
         return apiCallCount;
+    }
+
+    public static WeatherResponse processWeatherData(OpenWeatherResponse weatherData) {
+        WeatherResponse weatherResponse = new WeatherResponse();
+        Current current = new Current();
+        Forecast currForecast = weatherData.getList().get(1);
+        Main currMain = currForecast.getMain();
+        current.setTemp(currMain.getTemp());
+        current.setFeelsLike(currMain.getFeelsLike());
+        current.setHumidity(currMain.getHumidity());
+        current.setHighTemp(currMain.getTempMax());
+        current.setLowTemp(currMain.getTempMin());
+        current.setWind(currForecast.getWind().getSpeed());
+        current.setDate(currForecast.getDt());
+        current.setAdvisory(Helper.getAdvisory(currForecast, currMain));
+        weatherResponse.setCurrent(current);
+        weatherResponse.setCity(weatherData.getCity());
+
+        weatherResponse.setCurrent(current);
+        weatherResponse.setCity(weatherData.getCity());
+        weatherResponse.setForecast(Helper.groupForecasts(weatherData.getList()));
+
+        return weatherResponse;
     }
 
 }

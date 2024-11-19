@@ -1,7 +1,7 @@
 package com.example.weatherpredictor;
 
 import com.example.weatherpredictor.model.*;
-import com.example.weatherpredictor.service.WeatherService;
+import com.example.weatherpredictor.utils.Helper;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -32,8 +32,7 @@ public class WeatherServiceTest {
         mockResponse.setList(forecastList);
         mockResponse.setCity(new City("kolkata", 123, 124));
 
-        WeatherService weatherService = new WeatherService();
-        WeatherResponse result = weatherService.processWeatherData(mockResponse);
+        WeatherResponse result = Helper.processWeatherData(mockResponse);
 
         assertEquals("kolkata", result.getCity().getName());
         assertEquals(25.0, result.getCurrent().getTemp());
