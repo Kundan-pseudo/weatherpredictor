@@ -1,5 +1,9 @@
 package com.example.weatherpredictor.service;
 
+import com.example.weatherpredictor.model.*;
+import com.example.weatherpredictor.utils.Helper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,12 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.example.weatherpredictor.model.Current;
-import com.example.weatherpredictor.model.Forecast;
-import com.example.weatherpredictor.model.Main;
-import com.example.weatherpredictor.model.OpenWeatherResponse;
-import com.example.weatherpredictor.model.WeatherResponse;
-import com.example.weatherpredictor.utils.Helper;
+import redis.clients.jedis.Jedis;
 
 @Service
 @Slf4j
@@ -22,18 +21,48 @@ public class WeatherService {
     private String API_KEY;
     @Value("${weather.api.url}")
     private String BASE_URL;
+    @Value("${jedis.expiryInSec}")
+    private Integer expiryInSec;
+
+    @Autowired
+    private Jedis jedis;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private RestTemplate restTemplate;
 
     public ResponseEntity<OpenWeatherResponse> getPublicApiWeatherForecast(String city) {
         log.debug("WeatherService::getPublicApiWeatherForecast");
-        // TODO : check if data in redis : if yes then return it : else continue
-        Integer count = Helper.getApiCallCount();
+        OpenWeatherResponse cachedResponse = getFromCache(city);
+        if (cachedResponse != null) return ResponseEntity.ok(cachedResponse);
+        int count = Helper.getApiCallCount();
         String url = BASE_URL + "?q=" + city + "&appid=" + API_KEY + "&cnt=" + count + "&units=metric";
         OpenWeatherResponse response = restTemplate.getForObject(url, OpenWeatherResponse.class);
-        // TODO : save the result with key city and timeout - update time - current time
+        setInCache(city, response, expiryInSec);
         return ResponseEntity.ok(response);
+    }
+
+    public OpenWeatherResponse getFromCache(String key) {
+        log.debug("WeatherService::getFromCache");
+        try {
+            String jsonValue = jedis.get(key);
+            if (jsonValue == null) return null;
+            return objectMapper.readValue(jsonValue, OpenWeatherResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to deserialize JSON to OpenWeatherResponse from cache", e);
+        }
+    }
+
+    public void setInCache(String key, OpenWeatherResponse result, int expiryInSeconds) {
+        log.debug("WeatherService::setInCache");
+        try {
+            String jsonValue = objectMapper.writeValueAsString(result);
+            jedis.setex(key, expiryInSeconds, jsonValue);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize OpenWeatherResponse to JSON for cache", e);
+        }
     }
 
     public WeatherResponse getWeatherForecast(String city) {

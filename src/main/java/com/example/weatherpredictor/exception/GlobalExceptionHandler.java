@@ -1,21 +1,17 @@
 package com.example.weatherpredictor.exception;
 
 import com.example.weatherpredictor.dto.HttpClientErrorResponseBody;
+import com.example.weatherpredictor.model.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import com.example.weatherpredictor.model.ErrorResponse;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Arrays;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -37,11 +33,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpClientErrorException.class)
-    public ResponseEntity<String> handleHttpClientException(HttpClientErrorException ex) {
+    public ResponseEntity<HttpClientErrorResponseBody> handleHttpClientException(HttpClientErrorException ex) {
         log.error(Arrays.toString(ex.getStackTrace()));
         HttpClientErrorResponseBody res = ex.getResponseBodyAs(HttpClientErrorResponseBody.class);
-        String mess = (res != null)? res.getMessage() : "";
-        return new ResponseEntity<>(mess, ex.getStatusCode());
+        return new ResponseEntity<>(res, ex.getStatusCode());
     }
 
     @ExceptionHandler(Exception.class)
