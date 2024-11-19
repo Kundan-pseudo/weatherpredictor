@@ -28,9 +28,11 @@ public class WeatherService {
 
     public ResponseEntity<OpenWeatherResponse> getPublicApiWeatherForecast(String city) {
         log.debug("WeatherService::getPublicApiWeatherForecast");
+        // TODO : check if data in redis : if yes then return it : else continue
         Integer count = Helper.getApiCallCount();
         String url = BASE_URL + "?q=" + city + "&appid=" + API_KEY + "&cnt=" + count + "&units=metric";
         OpenWeatherResponse response = restTemplate.getForObject(url, OpenWeatherResponse.class);
+        // TODO : save the result with key city and timeout - update time - current time
         return ResponseEntity.ok(response);
     }
 
@@ -43,7 +45,7 @@ public class WeatherService {
         throw new RuntimeException("Failed to fetch weather data");
     }
 
-    private WeatherResponse processWeatherData(OpenWeatherResponse weatherData) {
+    public WeatherResponse processWeatherData(OpenWeatherResponse weatherData) {
         log.debug("WeatherService::processWeatherData");
         WeatherResponse weatherResponse = new WeatherResponse();
         Current current = new Current();

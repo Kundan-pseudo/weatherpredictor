@@ -1,5 +1,6 @@
 package com.example.weatherpredictor.exception;
 
+import com.example.weatherpredictor.dto.HttpClientErrorResponseBody;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,8 +11,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.weatherpredictor.model.ErrorResponse;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Arrays;
+
+import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -20,7 +24,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(WeatherServiceException.class)
     public ResponseEntity<ErrorResponse> handleWeatherServiceException(WeatherServiceException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), "Error fetching weather data");
-        log.error("Error = " + ex.getMessage());
+        log.error(Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -28,9 +32,16 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleValidationExceptions(ConstraintViolationException ex) {
         String errorMessage = ex.getConstraintViolations().iterator().next().getMessage();
-        log.error("Error = " + ex.getMessage());
         log.error(Arrays.toString(ex.getStackTrace()));
         return ResponseEntity.badRequest().body(errorMessage);
+    }
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<String> handleHttpClientException(HttpClientErrorException ex) {
+        log.error(Arrays.toString(ex.getStackTrace()));
+        HttpClientErrorResponseBody res = ex.getResponseBodyAs(HttpClientErrorResponseBody.class);
+        String mess = (res != null)? res.getMessage() : "";
+        return new ResponseEntity<>(mess, ex.getStatusCode());
     }
 
     @ExceptionHandler(Exception.class)
