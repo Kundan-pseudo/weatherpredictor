@@ -12,10 +12,7 @@ import com.example.weatherpredictor.model.Forecast;
 import com.example.weatherpredictor.model.Main;
 import com.example.weatherpredictor.model.OpenWeatherResponse;
 import com.example.weatherpredictor.model.WeatherResponse;
-import com.example.weatherpredictor.utils.Constants;
 import com.example.weatherpredictor.utils.Helper;
-
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @Service
 @Slf4j
@@ -29,7 +26,6 @@ public class WeatherService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @CircuitBreaker(name = Constants.WEATHER_SERVICE, fallbackMethod = "getWeatherFallback")
     public ResponseEntity<OpenWeatherResponse> getPublicApiWeatherForecast(String city) {
         log.debug("WeatherService::getPublicApiWeatherForecast");
         Integer count = Helper.getApiCallCount();
@@ -69,11 +65,5 @@ public class WeatherService {
         weatherResponse.setForecast(Helper.groupForecasts(weatherData.getList()));
 
         return weatherResponse;
-    }
-
-    public ResponseEntity<WeatherResponse> getWeatherFallback(Throwable t) {
-        log.debug("WeatherService::getWeatherFallback");
-        WeatherResponse mockResponse = Helper.getMockData();
-        return ResponseEntity.ok(mockResponse);
     }
 }
