@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 import com.example.weatherpredictor.model.*;
 
 public class Helper {
+
+    private static final int[] updateHours = {3, 6, 9, 12, 15, 18, 21, 24};
+
     public static String getAdvisory(Forecast forecast, Main main) {
         if (main.getTempMax() > 40)
             return Constants.ADVICE_USE_SUNSCREEN;
@@ -87,6 +90,16 @@ public class Helper {
         weatherResponse.setForecast(Helper.groupForecasts(weatherData.getList()));
 
         return weatherResponse;
+    }
+
+    public static int calcExpiryTime(int expiryInSec) {
+        LocalDateTime now = LocalDateTime.now();
+        for (int hour: updateHours) {
+            if (now.getHour() == hour - 1 && now.getMinute() >= 60 - expiryInSec / 60) {
+                return (60 - now.getMinute()) * 60 - now.getSecond();
+            }
+        }
+        return expiryInSec;
     }
 
 }
