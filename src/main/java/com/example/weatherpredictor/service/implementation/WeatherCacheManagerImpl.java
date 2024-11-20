@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -41,7 +42,7 @@ public class WeatherCacheManagerImpl implements WeatherCacheManager {
         log.debug("WeatherCacheManagerImpl::setInCache");
         try {
             String jsonValue = objectMapper.writeValueAsString(result);
-            redisTemplate.opsForValue().set(key, jsonValue, Duration.ofSeconds(Helper.calcExpiryTime(expiryInSec)));
+            redisTemplate.opsForValue().set(key, jsonValue, Duration.ofSeconds(Helper.calcExpiryTime(expiryInSec, LocalDateTime.now())));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize OpenWeatherResponse to JSON for cache", e);
         }

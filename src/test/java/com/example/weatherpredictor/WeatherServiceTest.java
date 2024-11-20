@@ -1,42 +1,82 @@
 package com.example.weatherpredictor;
 
-import com.example.weatherpredictor.model.*;
+import com.example.weatherpredictor.model.OpenWeatherResponse;
+import com.example.weatherpredictor.model.WeatherResponse;
+import com.example.weatherpredictor.service.WeatherApiClient;
+import com.example.weatherpredictor.service.WeatherCacheManager;
+import com.example.weatherpredictor.service.implementation.WeatherServiceImpl;
 import com.example.weatherpredictor.utils.Helper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 public class WeatherServiceTest {
 
+    @InjectMocks
+    private WeatherServiceImpl weatherService;
+
+    @Mock
+    private WeatherApiClient weatherApiClient;
+
+    @Mock
+    private WeatherCacheManager weatherCacheManager;
+
+    private static final OpenWeatherResponse cachedResponse = new OpenWeatherResponse();
+    private static final OpenWeatherResponse apiResponse = cachedResponse;
+    private static final WeatherResponse expectedResponse = new WeatherResponse();
+    private static MockedStatic<Helper> mockedStatic;
+
+    @BeforeAll
+    static void setup() {
+        mockedStatic = mockStatic(Helper.class);
+        mockedStatic.when(() -> Helper.processWeatherData(apiResponse))
+                .thenReturn(expectedResponse);
+    }
+
+    @AfterAll
+    static void cleanSetup() {
+        mockedStatic.close();
+    }
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
     @Test
-    void test_process_valid_openweatherresponse() {
-        OpenWeatherResponse mockResponse = new OpenWeatherResponse();
-        // Mocking the response data
-        List<Forecast> forecastList = new ArrayList<>();
-        Forecast forecast = new Forecast();
-        Main main = new Main();
-        main.setTemp(25.0);
-        main.setFeelsLike(23.0);
-        main.setHumidity(60);
-        main.setTempMax(42.0);
-        main.setTempMin(20.0);
-        forecast.setMain(main);
-        forecast.setWind(new Wind(5.0));
-        forecast.setDt("2024-11-19 19:50:10");
-        forecast.setWeather(List.of(new Weather("weather description", "weather icon")));
-        forecastList.add(forecast);
-        forecastList.add(forecast);
-        mockResponse.setList(forecastList);
-        mockResponse.setCity(new City("kolkata", 123, 124));
+    public void testGetWeatherForecast_DataPresentInCache() {
+        String city = "London";
 
-        WeatherResponse result = Helper.processWeatherData(mockResponse);
+        when(weatherCacheManager.getFromCache(city)).thenReturn(cachedResponse);
 
-        assertEquals("kolkata", result.getCity().getName());
-        assertEquals(25.0, result.getCurrent().getTemp());
-        assertEquals(23.0, result.getCurrent().getFeelsLike());
-        assertEquals(60, result.getCurrent().getHumidity());
+        WeatherResponse actualResponse = weatherService.getWeatherForecast(city);
+
+        assertEquals(expectedResponse, actualResponse);
+        verify(weatherCacheManager, times(1)).getFromCache(city);
+        verify(weatherApiClient, never()).getWeatherForecast(any());
+        verify(weatherCacheManager, never()).setInCache(any(), any());
+    }
+
+    @Test
+    public void testGetWeatherForecast_DataNotPresentInCache() {
+        String city = "Paris";
+
+        when(weatherCacheManager.getFromCache(city)).thenReturn(null);
+        when(weatherApiClient.getWeatherForecast(city)).thenReturn(apiResponse);
+
+        WeatherResponse actualResponse = weatherService.getWeatherForecast(city);
+
+        assertEquals(expectedResponse, actualResponse);
+        verify(weatherCacheManager, times(1)).getFromCache(city);
+        verify(weatherApiClient, times(1)).getWeatherForecast(city);
+        verify(weatherCacheManager, times(1)).setInCache(city, apiResponse);
     }
 }

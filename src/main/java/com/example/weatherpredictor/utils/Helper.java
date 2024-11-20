@@ -92,8 +92,7 @@ public class Helper {
         return weatherResponse;
     }
 
-    public static int calcExpiryTime(int expiryInSec) {
-        LocalDateTime now = LocalDateTime.now();
+    public static int calcExpiryTime(int expiryInSec, LocalDateTime now) {
         for (int hour: updateHours) {
             if (now.getHour() == hour - 1 && now.getMinute() >= 60 - expiryInSec / 60) {
                 return (60 - now.getMinute()) * 60 - now.getSecond();
