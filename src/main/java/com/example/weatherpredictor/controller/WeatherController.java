@@ -1,6 +1,7 @@
 package com.example.weatherpredictor.controller;
 
 import jakarta.validation.constraints.Pattern;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,10 +20,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/weather")
 @Validated
 @Slf4j
+@RequiredArgsConstructor
 public class WeatherController {
 
-    @Autowired
-    private WeatherService weatherService;
+    private final WeatherService weatherService;
 
     @GetMapping
     public ResponseEntity<WeatherResponse> getWeatherForecast(@RequestParam @Pattern(regexp = "^[a-zA-Z ]+$", message = "City name must only contain letters and spaces") String city) {

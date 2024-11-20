@@ -5,19 +5,18 @@ import com.example.weatherpredictor.service.WeatherApiClient;
 import com.example.weatherpredictor.service.WeatherCacheManager;
 import com.example.weatherpredictor.service.WeatherService;
 import com.example.weatherpredictor.utils.Helper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class WeatherServiceImpl implements WeatherService {
 
-    @Autowired
-    private WeatherApiClient weatherApiClient;
-
-    @Autowired
-    private WeatherCacheManager weatherCacheManager;
+    private final WeatherApiClient weatherApiClient;
+    private final WeatherCacheManager weatherCacheManager;
 
     public WeatherResponse getWeatherForecast(String city) {
         log.debug("WeatherServiceImpl::getWeatherForecast");

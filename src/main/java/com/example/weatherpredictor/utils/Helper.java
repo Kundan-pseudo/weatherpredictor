@@ -7,11 +7,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.example.weatherpredictor.model.*;
 
 public class Helper {
+
+    private Helper() {
+
+    }
 
     private static final int[] updateHours = {3, 6, 9, 12, 15, 18, 21, 24};
 
@@ -43,7 +46,7 @@ public class Helper {
                     entry.getValue().forEach(forecast -> details.getSteps().add(createStepUp(forecast, formatter)));
                     return details;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static StepUp createStepUp(Forecast forecast, DateTimeFormatter formatter) {

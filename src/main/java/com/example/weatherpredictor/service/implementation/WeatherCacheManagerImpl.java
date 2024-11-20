@@ -5,6 +5,7 @@ import com.example.weatherpredictor.service.WeatherCacheManager;
 import com.example.weatherpredictor.utils.Helper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,15 +17,16 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class WeatherCacheManagerImpl implements WeatherCacheManager {
 
     @Value("${spring.data.redis.timeout}")
     private int expiryInSec;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+
+    private final ObjectMapper objectMapper;
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     public OpenWeatherResponse getFromCache(String key) {
         log.debug("WeatherCacheManagerImpl::getFromCache");
