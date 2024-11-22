@@ -1,6 +1,6 @@
 package com.example.weatherpredictor;
 
-import com.example.weatherpredictor.controller.WeatherController;
+import com.example.weatherpredictor.controller.implementation.WeatherControllerImpl;
 import com.example.weatherpredictor.model.WeatherResponse;
 import com.example.weatherpredictor.service.WeatherService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.mockito.Mockito.when;
 
-@WebMvcTest(WeatherController.class)
+@WebMvcTest(WeatherControllerImpl.class)
 class WeatherControllerTest {
 
     @Autowired
